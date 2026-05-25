@@ -4,7 +4,8 @@ export default defineManifest({
   manifest_version: 3,
   name: "Why Saved",
   version: "0.0.1",
-  description: "Bookmarks with memory and intent.",
+  description:
+    "Save bookmarks with memory and intent and know why you saved them later",
   permissions: ["storage", "tabs", "activeTab"],
   host_permissions: ["<all_urls>"],
   action: {

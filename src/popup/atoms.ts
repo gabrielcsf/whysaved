@@ -9,3 +9,4 @@ export const bookmarkAtom = atom<BookmarkRecord>({
 })
 export const loadingAtom = atom(false)
 export const savedAtom = atom(false)
+export const enrichStatusAtom = atom('')

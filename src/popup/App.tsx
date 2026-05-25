@@ -1,13 +1,13 @@
 import { useAtom } from 'jotai'
 import { useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-
-import { bookmarkAtom, loadingAtom, savedAtom } from './atoms'
+import { bookmarkAtom, enrichStatusAtom, loadingAtom, savedAtom } from './atoms'
 
 export default function App() {
   const [bookmark, setBookmark] = useAtom(bookmarkAtom)
   const [loading, setLoading] = useAtom(loadingAtom)
   const [saved, setSaved] = useAtom(savedAtom)
+  const [enrichStatus, setEnrichStatus] = useAtom(enrichStatusAtom)
 
   useEffect(() => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -29,12 +29,12 @@ export default function App() {
       if (error) throw error
 
       setSaved(true)
-      console.log('Saving bookmark:', bookmark)
     } catch (err) {
       console.error(err)
       alert('Failed to save bookmark')
     } finally {
       setLoading(false)
+      setEnrichStatus('')
     }
   }
 
@@ -70,6 +70,12 @@ export default function App() {
       </button>
 
 
+
+      {loading && enrichStatus && (
+        <div className="rounded-xl bg-gray-50 p-3 text-xs text-gray-500 font-mono whitespace-pre-wrap break-all">
+          {enrichStatus}
+        </div>
+      )}
 
       {saved && (
         <div className="rounded-xl bg-green-100 p-3 text-sm">
