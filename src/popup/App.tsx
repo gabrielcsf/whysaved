@@ -1,9 +1,11 @@
 import { useAtom } from 'jotai'
 import { useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-import { bookmarkAtom, enrichStatusAtom, loadingAtom, savedAtom } from './atoms'
+import { bookmarkAtom, enrichStatusAtom, loadingAtom, pageAtom, savedAtom } from './atoms'
+import BookmarksPage from './BookmarksPage'
 
 export default function App() {
+  const [page, setPage] = useAtom(pageAtom)
   const [bookmark, setBookmark] = useAtom(bookmarkAtom)
   const [loading, setLoading] = useAtom(loadingAtom)
   const [saved, setSaved] = useAtom(savedAtom)
@@ -44,12 +46,25 @@ export default function App() {
       <nav className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200 shadow-sm">
         <h1 className="text-base font-semibold tracking-tight text-gray-900">Why Saved?</h1>
         <div className="flex items-center gap-1">
-          <a href="#" className="px-3 py-1.5 text-xs font-medium text-gray-500 rounded-md hover:bg-gray-100 hover:text-gray-900 transition-colors">Home</a>
-          <a href="#" className="px-3 py-1.5 text-xs font-medium text-gray-500 rounded-md hover:bg-gray-100 hover:text-gray-900 transition-colors">Bookmarks</a>
-          <a href="#" className="px-3 py-1.5 text-xs font-medium text-gray-500 rounded-md hover:bg-gray-100 hover:text-gray-900 transition-colors">Settings</a>
+          {(['home', 'bookmarks'] as const).map((p) => (
+            <button
+              key={p}
+              onClick={() => setPage(p)}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors capitalize ${
+                page === p
+                  ? 'bg-gray-100 text-gray-900'
+                  : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900'
+              }`}
+            >
+              {p}
+            </button>
+          ))}
         </div>
       </nav>
 
+      {page === 'bookmarks' ? (
+        <BookmarksPage />
+      ) : (
       <div className="p-4 flex flex-col gap-3">
         {/* Description */}
         <p className="text-sm text-gray-500">Save why this page matters.</p>
@@ -83,6 +98,7 @@ export default function App() {
         </div>
       )}
       </div>
+      )}
     </div>
   )
 }
