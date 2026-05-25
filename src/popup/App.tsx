@@ -1,8 +1,8 @@
 import { useAtom } from 'jotai'
 import { useEffect } from 'react'
+import { supabase } from '../lib/supabase'
 
 import { bookmarkAtom, loadingAtom, savedAtom } from './atoms'
-import logo from '../../public/logo.png'
 
 export default function App() {
   const [bookmark, setBookmark] = useAtom(bookmarkAtom)
@@ -12,7 +12,6 @@ export default function App() {
   useEffect(() => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const tab = tabs[0]
-
       setBookmark({ title: tab.title || '', url: tab.url || '', note: bookmark.note, favicon: tab.favIconUrl || '' })
     })
   }, [])
@@ -21,6 +20,14 @@ export default function App() {
     setLoading(true)
 
     try {
+      const { error } = await supabase.from('bookmarks').insert({
+        title: bookmark.title,
+        url: bookmark.url,
+        note: bookmark.note,
+      })
+
+      if (error) throw error
+
       setSaved(true)
       console.log('Saving bookmark:', bookmark)
     } catch (err) {
@@ -32,13 +39,20 @@ export default function App() {
   }
 
   return (
-    <div className="p-4 flex flex-col gap-4">
-      <div>
-        <h1 className="text-xl font-bold">Why Saved?</h1>
-        <p className="text-sm text-gray-500">
-          Save why this page matters.
-        </p>
-      </div>
+    <div className="flex flex-col min-h-0">
+      {/* Navbar */}
+      <nav className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200 shadow-sm">
+        <h1 className="text-base font-semibold tracking-tight text-gray-900">Why Saved?</h1>
+        <div className="flex items-center gap-1">
+          <a href="#" className="px-3 py-1.5 text-xs font-medium text-gray-500 rounded-md hover:bg-gray-100 hover:text-gray-900 transition-colors">Home</a>
+          <a href="#" className="px-3 py-1.5 text-xs font-medium text-gray-500 rounded-md hover:bg-gray-100 hover:text-gray-900 transition-colors">Bookmarks</a>
+          <a href="#" className="px-3 py-1.5 text-xs font-medium text-gray-500 rounded-md hover:bg-gray-100 hover:text-gray-900 transition-colors">Settings</a>
+        </div>
+      </nav>
+
+      <div className="p-4 flex flex-col gap-3">
+        {/* Description */}
+        <p className="text-sm text-gray-500">Save why this page matters.</p>
 
       <textarea
         className="border rounded-xl p-3 min-h-[120px]"
@@ -55,11 +69,14 @@ export default function App() {
         {loading ? 'Saving...' : 'Save Bookmark'}
       </button>
 
+
+
       {saved && (
         <div className="rounded-xl bg-green-100 p-3 text-sm">
           Bookmark saved successfully.
         </div>
       )}
+      </div>
     </div>
   )
 }
