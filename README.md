@@ -1,6 +1,6 @@
 # Why Saved?
 
-This is a Chrome extension built with the React + Vite + CRXJS template.
+This is a Chrome extension built with the React + Vite + CRXJS template. See demo [here](https://www.loom.com/share/53854f2b031e4825be380fea39ffc756).
 
 ## Features
 
