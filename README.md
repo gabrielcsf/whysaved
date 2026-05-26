@@ -1,6 +1,6 @@
-# React + Vite + CRXJS
+# Why Saved?
 
-This template helps you quickly start developing Chrome extensions with React, TypeScript and Vite. It includes the CRXJS Vite plugin for seamless Chrome extension development.
+This is a Chrome extension built with the React + Vite + CRXJS template.
 
 ## Features
 
@@ -15,13 +15,13 @@ This template helps you quickly start developing Chrome extensions with React, T
 1. Install dependencies:
 
 ```bash
-npm install
+pnpm i
 ```
 
 2. Start development server:
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 3. Open Chrome and navigate to `chrome://extensions/`, enable "Developer mode", and load the unpacked extension from the `dist` directory.
@@ -29,7 +29,12 @@ npm run dev
 4. Build for production:
 
 ```bash
-npm run build
+pnpm build
+```
+
+5. Testing:
+```bash
+ pnpm test:run
 ```
 
 ## Project Structure
