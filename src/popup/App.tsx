@@ -14,7 +14,7 @@ export default function App() {
   useEffect(() => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const tab = tabs[0]
-      setBookmark({ title: tab.title || '', url: tab.url || '', note: bookmark.note, favicon: tab.favIconUrl || '' })
+      setBookmark({ title: tab.title || '', url: tab.url || '', note: bookmark.note })
     })
   }, [])
 

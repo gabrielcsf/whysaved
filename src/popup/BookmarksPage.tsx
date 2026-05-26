@@ -66,15 +66,15 @@ export default function BookmarksPage() {
 
   return (
     <div className="flex flex-col">
-      <div className="px-4 pt-3 pb-2">
-        <input
-          type="search"
-          placeholder="Search bookmarks…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm outline-none focus:border-gray-400 focus:bg-white transition-colors"
-        />
-      </div>
+        <div className="px-4 pt-3 pb-2">
+          <input
+            type="search"
+            placeholder="Search bookmarks…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm outline-none focus:border-gray-400 focus:bg-white transition-colors"
+          />
+        </div>
 
       {error && <p className="px-4 py-2 text-sm text-red-500">{error}</p>}
 
@@ -87,35 +87,18 @@ export default function BookmarksPage() {
       ) : (
         <ul className="flex flex-col divide-y divide-gray-100">
           {bookmarks.map((bm) => (
-            <li key={bm.id} className="flex gap-3 px-4 py-3 hover:bg-gray-50">
-              {bm.favicon && (
-                <img src={bm.favicon} alt="" className="mt-0.5 h-4 w-4 flex-shrink-0" />
+            <li key={bm.id} className="px-4 py-1.5 hover:bg-gray-50">
+              <a
+                href={bm.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="truncate text-xs font-medium text-gray-900 hover:underline block"
+              >
+                {bm.title || bm.url}
+              </a>
+              {bm.note && (
+                <p className="truncate text-xs text-gray-400">{bm.note}</p>
               )}
-              <div className="min-w-0">
-                <a
-                  href={bm.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block truncate text-sm font-medium text-gray-900 hover:underline"
-                >
-                  {bm.title || bm.url}
-                </a>
-                {bm.note && (
-                  <p className="mt-0.5 truncate text-xs text-gray-500">{bm.note}</p>
-                )}
-                {bm.tags && bm.tags.length > 0 && (
-                  <div className="mt-1 flex flex-wrap gap-1">
-                    {bm.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
             </li>
           ))}
         </ul>

@@ -2,29 +2,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { enrichBookmark } from '../src/lib/bookmark'
 import type { BookmarkRecord } from '../src/lib/types'
 
-const mockSend = vi.hoisted(() => vi.fn())
+const mockInvoke = vi.hoisted(() => vi.fn())
 
-vi.mock('@openrouter/sdk', () => {
-  function OpenRouter() {
-    return { chat: { send: mockSend } }
-  }
-  return { OpenRouter }
-})
+vi.mock('../src/lib/supabase', () => ({
+  supabase: { functions: { invoke: mockInvoke } },
+}))
 
 const baseBookmark: BookmarkRecord = {
   title: 'Test Page',
   url: 'https://example.com',
   note: 'Interesting read on TypeScript',
-}
-
-function makeStream(parts: Array<string | null>) {
-  return {
-    [Symbol.asyncIterator]: async function* () {
-      for (const part of parts) {
-        yield { choices: [{ delta: { content: part } }] }
-      }
-    },
-  }
 }
 
 beforeEach(() => {
@@ -33,50 +20,35 @@ beforeEach(() => {
 
 describe('enrichBookmark', () => {
   it('returns enriched bookmark with summary and tags', async () => {
-    const json = JSON.stringify({ summary: 'A TS guide', tags: ['ts', 'dev', 'typing'] })
-    mockSend.mockResolvedValue(makeStream([json]))
+    mockInvoke.mockResolvedValue({ data: { summary: 'A TS guide', tags: ['ts', 'dev', 'typing'] }, error: null })
 
     const result = await enrichBookmark(baseBookmark)
 
     expect(result).toEqual({ ...baseBookmark, summary: 'A TS guide', tags: ['ts', 'dev', 'typing'] })
   })
 
-  it('assembles chunks before parsing', async () => {
-    mockSend.mockResolvedValue(makeStream(['{"summary":', '"streamed"', ',"tags":["a","b","c"]}']))
-
-    const result = await enrichBookmark(baseBookmark)
-
-    expect(result.summary).toBe('streamed')
-    expect(result.tags).toEqual(['a', 'b', 'c'])
-  })
-
-  it('calls onChunk with accumulating text on each chunk', async () => {
-    mockSend.mockResolvedValue(makeStream(['{"summary":', '"live"', ',"tags":[]}']))
+  it('calls onChunk with the JSON-stringified response', async () => {
+    mockInvoke.mockResolvedValue({ data: { summary: 'live', tags: [] }, error: null })
     const onChunk = vi.fn()
 
     await enrichBookmark(baseBookmark, onChunk)
 
-    expect(onChunk).toHaveBeenCalledTimes(3)
-    expect(onChunk).toHaveBeenNthCalledWith(1, '{"summary":')
-    expect(onChunk).toHaveBeenNthCalledWith(2, '{"summary":"live"')
-    expect(onChunk).toHaveBeenNthCalledWith(3, '{"summary":"live","tags":[]}')
+    expect(onChunk).toHaveBeenCalledTimes(1)
+    expect(onChunk).toHaveBeenCalledWith(JSON.stringify({ summary: 'live', tags: [] }))
   })
 
-  it('returns original bookmark when response contains no JSON', async () => {
-    mockSend.mockResolvedValue(makeStream(['sorry, cannot help']))
+  it('returns original bookmark fields when summary/tags are missing', async () => {
+    mockInvoke.mockResolvedValue({ data: {}, error: null })
 
     const result = await enrichBookmark(baseBookmark)
 
-    expect(result).toEqual(baseBookmark)
+    expect(result).toEqual({ ...baseBookmark, summary: undefined, tags: undefined })
   })
 
-  it('handles null delta content without throwing', async () => {
-    mockSend.mockResolvedValue(makeStream(['{"summary":"null-safe"', null, ',"tags":["ok"]}']))
+  it('throws when the edge function returns an error', async () => {
+    mockInvoke.mockResolvedValue({ data: null, error: new Error('Unauthorized') })
 
-    const result = await enrichBookmark(baseBookmark)
-
-    expect(result.summary).toBe('null-safe')
-    expect(result.tags).toEqual(['ok'])
+    await expect(enrichBookmark(baseBookmark)).rejects.toThrow('Unauthorized')
   })
 
   it('preserves all original bookmark fields on the enriched result', async () => {
@@ -86,7 +58,7 @@ describe('enrichBookmark', () => {
       favicon: 'https://example.com/favicon.ico',
       created_at: '2026-01-01',
     }
-    mockSend.mockResolvedValue(makeStream([JSON.stringify({ summary: 'X', tags: ['y'] })]))
+    mockInvoke.mockResolvedValue({ data: { summary: 'X', tags: ['y'] }, error: null })
 
     const result = await enrichBookmark(full)
 

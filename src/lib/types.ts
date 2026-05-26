@@ -3,7 +3,6 @@ export interface BookmarkRecord {
   title: string;
   url: string;
   note: string;
-  favicon?: string;
   summary?: string;
   tags?: string[];
   created_at?: string;
